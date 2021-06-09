@@ -25,10 +25,12 @@ import javafx.stage.StageStyle;
  * </p>
  * 
  * @author Owen Gallagher
- * @author James Penn
+ * @version {@value System#VERSION}
  *
  */
 public class System {
+	public static final String VERSION = "0.1.1";
+	
 	public static Out out = new Out();
 	
 	public static String getProperty(String key) {
@@ -47,6 +49,7 @@ public class System {
 		private final String WINDOW_NAME = "temp_fx_logger.System.out.console";
 		private long maxHistory = Long.MAX_VALUE;
 		
+		private boolean useWindow = false;
 		private Stage consoleWindow;
 		private ListView<String> consoleView;
 		private ObservableList<String> console;
@@ -54,27 +57,37 @@ public class System {
 		public Out() {
 			Platform.runLater(new Runnable() {
 				public void run() {
-					Rectangle2D monitor = Screen.getPrimary().getBounds();
-					
-					consoleWindow = new Stage(StageStyle.DECORATED);
-					consoleWindow.setTitle(WINDOW_NAME);
-					
-					consoleWindow.setWidth(500);
-					consoleWindow.setHeight(800);
-					
-					//move to bottom right corner
-					consoleWindow.setX(monitor.getWidth() - consoleWindow.getWidth());
-					consoleWindow.setY(monitor.getHeight() - consoleWindow.getHeight());
-					
-					consoleView = new ListView<>();
-					consoleView.prefWidthProperty().bind(consoleWindow.widthProperty());
-					consoleView.prefHeightProperty().bind(consoleWindow.heightProperty());
-					
-					console = consoleView.getItems();
-					
-					Scene consoleScene = new Scene(consoleView);
-					consoleWindow.setScene(consoleScene);
-					consoleWindow.show();
+					try {
+						Rectangle2D monitor = Screen.getPrimary().getBounds();
+						
+						consoleWindow = new Stage(StageStyle.DECORATED);
+						consoleWindow.setTitle(WINDOW_NAME);
+						
+						consoleWindow.setWidth(500);
+						consoleWindow.setHeight(800);
+						
+						//move to bottom right corner
+						consoleWindow.setX(monitor.getWidth() - consoleWindow.getWidth());
+						consoleWindow.setY(monitor.getHeight() - consoleWindow.getHeight());
+						
+						consoleView = new ListView<>();
+						consoleView.prefWidthProperty().bind(consoleWindow.widthProperty());
+						consoleView.prefHeightProperty().bind(consoleWindow.heightProperty());
+						
+						console = consoleView.getItems();
+						
+						Scene consoleScene = new Scene(consoleView);
+						consoleWindow.setScene(consoleScene);
+						consoleWindow.show();
+						
+						useWindow = true;
+					}
+					catch (java.lang.IllegalStateException e) {
+						consoleWindow = null;
+						consoleView = null;
+						console = null;
+						useWindow = false;
+					}
 				}
 			});
 		}
@@ -84,15 +97,17 @@ public class System {
 			java.lang.System.out.print(object);
 			
 			//print to javafx console
-			Platform.runLater(new Runnable() {
-				public void run() {
-					console.add(object.toString());
-					
-					if (console.size() > maxHistory) {
-						console.remove(0);
+			if (useWindow) {
+				Platform.runLater(new Runnable() {
+					public void run() {
+						console.add(object.toString());
+						
+						if (console.size() > maxHistory) {
+							console.remove(0);
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 		
 		public void println(Object object) {
