@@ -1,4 +1,4 @@
-package temp_fx_logger;
+package ogallagher.temp_fx_logger;
 
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -81,7 +81,7 @@ public class System {
 			});
 		}
 		
-		public void print(Object object) {
+		public void print(final Object object) {
 			//print to system console
 			java.lang.System.out.print(object);
 			
