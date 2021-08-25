@@ -6,7 +6,7 @@
 
   <groupId>ogallagher</groupId>
   <artifactId>temp_fx_logger</artifactId>
-  <version>0.0.1</version>
+  <version>0.1.2</version>
 
   <name>temp_fx_logger</name>
   <description>A simple temp_fx_logger.</description>

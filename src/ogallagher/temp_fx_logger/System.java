@@ -29,7 +29,7 @@ import javafx.stage.StageStyle;
  *
  */
 public class System {
-	public static final String VERSION = "0.1.1";
+	public static final String VERSION = "0.1.2";
 	
 	public static Out out = new Out();
 	
@@ -53,35 +53,61 @@ public class System {
 		private ListView<String> consoleView;
 		private ObservableList<String> console;
 		
+		private boolean tryInit = true;
+		
 		public Out() {
-			Platform.runLater(new Runnable() {
-				public void run() {
-					Rectangle2D monitor = Screen.getPrimary().getBounds();
-					
-					consoleWindow = new Stage(StageStyle.DECORATED);
-					consoleWindow.setTitle(WINDOW_NAME);
-					
-					consoleWindow.setWidth(500);
-					consoleWindow.setHeight(800);
-					
-					//move to bottom right corner
-					consoleWindow.setX(monitor.getWidth() - consoleWindow.getWidth());
-					consoleWindow.setY(monitor.getHeight() - consoleWindow.getHeight());
-					
-					consoleView = new ListView<>();
-					consoleView.prefWidthProperty().bind(consoleWindow.widthProperty());
-					consoleView.prefHeightProperty().bind(consoleWindow.heightProperty());
-					
-					console = consoleView.getItems();
-					
-					Scene consoleScene = new Scene(consoleView);
-					consoleWindow.setScene(consoleScene);
-					consoleWindow.show();
-				}
-			});
+			init();
+		}
+		
+		/**
+		 * Attempt to initialize javafx-dependent members {@link #consoleWindow}, 
+		 * {@link #consoleView}, {@link #console}.<br><br>
+		 * 
+		 * Updates {@link #tryInit} to {@code false} if the initialization is successful.
+		 */
+		private void init() {
+			try {
+				Platform.runLater(new Runnable() {
+					public void run() {
+						Rectangle2D monitor = Screen.getPrimary().getBounds();
+						
+						consoleWindow = new Stage(StageStyle.DECORATED);
+						consoleWindow.setTitle(WINDOW_NAME);
+						
+						consoleWindow.setWidth(500);
+						consoleWindow.setHeight(800);
+						
+						//move to bottom right corner
+						consoleWindow.setX(monitor.getWidth() - consoleWindow.getWidth());
+						consoleWindow.setY(monitor.getHeight() - consoleWindow.getHeight());
+						
+						consoleView = new ListView<>();
+						consoleView.prefWidthProperty().bind(consoleWindow.widthProperty());
+						consoleView.prefHeightProperty().bind(consoleWindow.heightProperty());
+						
+						console = consoleView.getItems();
+						
+						Scene consoleScene = new Scene(consoleView);
+						consoleWindow.setScene(consoleScene);
+						consoleWindow.show();
+					}
+				});
+				
+				// initialization complete
+				tryInit = false;
+			}
+			catch (IllegalStateException e) {
+				// javafx thread not ready, try again later
+				tryInit = true;
+			}
 		}
 		
 		public void print(final Object object) {
+			// ensure members exist
+			if (tryInit) {
+				init();
+			}
+			
 			//print to system console
 			java.lang.System.out.print(object);
 			
