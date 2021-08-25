@@ -1,5 +1,8 @@
 package ogallagher.temp_fx_logger;
 
+import java.awt.List;
+import java.util.LinkedList;
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Rectangle2D;
@@ -52,10 +55,13 @@ public class System {
 		private Stage consoleWindow;
 		private ListView<String> consoleView;
 		private ObservableList<String> console;
+		private LinkedList<String> preguiConsole;
 		
 		private boolean tryInit = true;
 		
 		public Out() {
+			preguiConsole = new LinkedList<>();
+			
 			init();
 		}
 		
@@ -65,7 +71,7 @@ public class System {
 		 * 
 		 * Updates {@link #tryInit} to {@code false} if the initialization is successful.
 		 */
-		private void init() {
+		private void init() {			
 			try {
 				Platform.runLater(new Runnable() {
 					public void run() {
@@ -95,6 +101,12 @@ public class System {
 				
 				// initialization complete
 				tryInit = false;
+				
+				// flush pre-gui console
+				for (String preguiMessage : preguiConsole) {
+					print(preguiMessage);
+				}
+				preguiConsole = null;
 			}
 			catch (IllegalStateException e) {
 				// javafx thread not ready, try again later
@@ -108,19 +120,25 @@ public class System {
 				init();
 			}
 			
-			//print to system console
-			java.lang.System.out.print(object);
-			
-			//print to javafx console
-			Platform.runLater(new Runnable() {
-				public void run() {
-					console.add(object.toString());
-					
-					if (console.size() > maxHistory) {
-						console.remove(0);
+			if (!tryInit) {
+				//print to system console
+				java.lang.System.out.print(object);
+				
+				//print to javafx console
+				Platform.runLater(new Runnable() {
+					public void run() {
+						console.add(object.toString());
+						
+						if (console.size() > maxHistory) {
+							console.remove(0);
+						}
 					}
-				}
-			});
+				});
+			}
+			else {
+				// enqueue pre-gui message
+				preguiConsole.add(object.toString());
+			}
 		}
 		
 		public void println(Object object) {
