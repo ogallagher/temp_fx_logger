@@ -32,7 +32,7 @@ import javafx.stage.StageStyle;
  *
  */
 public class System {
-	public static final String VERSION = "0.1.2";
+	public static final String VERSION = "0.1.3";
 	
 	public static Out out = new Out();
 	
@@ -46,6 +46,10 @@ public class System {
 	
 	public static void debugSetConsoleMaxHistory(long maxHistory) {
 		 out.setMaxHistory(maxHistory);
+	}
+	
+	public static Stage getConsoleWindow() {
+		return out.consoleWindow;
 	}
 	
 	public static class Out {
